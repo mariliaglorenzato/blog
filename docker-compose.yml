@@ -1,0 +1,49 @@
+version: '3.8'
+services:
+  postgres:
+    build: 
+      dockerfile: Dockerfile-postgresql
+    container_name: postgres
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    environment:
+      POSTGRES_PASSWORD: 123456
+    networks:
+      local-network:
+        ipv4_address: 172.26.0.13
+
+    env_file:
+      - .env
+  blog:
+    build:
+      context: .
+      dockerfile: Dockerfile 
+    image: blog
+    container_name: blog
+    tty: true 
+    ports:
+      - '3000:3000'
+    env_file: 
+      - .env
+    volumes:
+      - .:/blog
+      - gems:/usr/local/bundle/
+    depends_on:
+      - postgres
+    external_links:
+      - postgres
+    networks:
+      local-network:
+        ipv4_address: 172.26.0.15
+
+networks: 
+  local-network:
+    ipam:
+      driver: default
+      config:
+        - subnet: "172.26.0.0/24"
+
+volumes:
+  postgres_data:
+  gems:
+
